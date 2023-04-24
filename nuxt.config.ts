@@ -2,6 +2,6 @@
 export default defineNuxtConfig({
     mode: 'static',
     router: {
-       base: 'tên repository'
+       base: '/app-test/'
     },
 })
