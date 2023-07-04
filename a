@@ -1,0 +1,69 @@
+<?php
+include_once "../includes/connect.php";
+include_once '../vendor/autoload.php';
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+if($_SERVER["REQUEST_METHOD"] == "GET") {
+    if(isset($_GET["donhanglist"])) {
+        //danh sach id don hang
+        $id_arr_str = explode(",", $_GET["donhanglist"]);
+        $col_arr_full = range('A', 'S');
+      
+        if(count($id_arr_str)) {
+            $table = "donhang";
+            $query = "SELECT * FROM $table WHERE ";
+            foreach($id_arr_str as $id) {
+                $id_num = (int)$id;
+                if($id_num) {
+                    $query .= "id = $id_num OR ";
+                }
+            }
+            $query = rtrim($query, " OR ");
+            $records = mysqli_query($dbc, $query);
+            if($records->num_rows) {
+                $records = mysqli_fetch_all($records, MYSQLI_ASSOC);
+                $donhangSheet = new Spreadsheet();
+                $init_sheet =$donhangSheet->getActiveSheet();
+                $col_name = [
+                    "Mã đơn hàng",
+                    "Họ và Tên",
+                    "Số điện thoại",
+                    "Email",
+                    "Địa chỉ",
+                    "Tên Sản Phẩm",
+                    "Số lượng",
+                    "Đơn Giá",
+                    "Tổng Tiền",
+                    "Giảm giá",
+                    "Phí Ship",
+                    "Thu KH",
+                    "Doanh Thu",
+                    "Thanh Toán",
+                    "Trạng Thái",
+                    "Ngày đặt",
+                    "Ghi chú",
+                    "Nguồn đơn",
+                    "Người tạo",
+                ];
+                foreach ($col_arr_full as $key=> $col) {
+                    $init_sheet->getColumnDimension($col)->setWidth(18);
+                    $col_val =   $col_name[$key];
+                    $col_excel_index = $col."1"; // A2
+                    $init_sheet->getStyle($col_excel_index)->getFont()->setBold(false);
+                    $init_sheet->setCellValue($col_excel_index ,  $col_val);
+                }
+                $record_index = 2;
+               
+                foreach ($records as $index=>$record) {
+                    foreach($col_arr_full as $col) {
+                        $col_excel_index = $col.$record_index; // A2
+                        $init_sheet->getStyle($col_excel_index)->getFont()->setBold(false);
+                        $init_sheet->setCellValue($col_excel_index ,  $col_val);
+                    }
+                    $record_index++;
+                }
+            }
+        }
+    }
+}
+?>
